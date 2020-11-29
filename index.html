@@ -1,0 +1,510 @@
+
+<html>
+<head>
+
+	
+<script src="jquery-1.4.4-binary-ajax.js"></script>
+<script src="http://cdn.rawgit.com/vjeux/jParser/master/src/jparser.js"></script>
+<script src="jdataview.js"></script>
+<script src="gn.js"></script>
+<script src="gn2.js"></script>
+<script src="dislay_anim_gui.js"></script>
+<script src="convert_function.js"></script>
+<script src="matrix.js"></script>
+
+<title >-=[Giay Nhap]=- Test Web Convert Model</title>
+<style>
+#zoom { display: inline-block; position:absolute; left: 5%;top: 65px;width:250px;height:40px}
+#convet_but
+{
+position: absolute;
+left: 170px;top: 5px;width:150px;height:30px;
+
+}
+#glcanvas{
+box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+
+}
+#anim_list{
+background-color: #4CAF50;
+position: absolute;
+box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+.button1{
+background-color: #4CAF50;
+
+border: none;
+color: white;
+
+text-decoration: none;
+font-size: 16px;
+box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+.button1:hover {
+    background-color:  #008CBA;
+    color: white;
+	box-shadow: 0 8px 16px 0 rgba(0,0,0,0), 0 0px 20px 0 rgba(0,0,0,0.19);
+}
+
+.fileinputs {
+	position: absolute;
+}
+.fakefile {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	z-index: 1;
+}
+
+input.file {
+	position: absolute;
+	text-align: right;
+	-moz-opacity:0 ;
+	filter:alpha(opacity: 0);
+	opacity: 0;
+	z-index: 2;
+}
+#titel_w{
+   color:  #008CBA;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+	box-shadow: 0 8px 16px 0 rgba(0,0,0,0), 0 0px 20px 0 rgba(0,0,0,0.19);
+}
+</style>
+
+</head>
+<body>
+<center>
+ 
+<h1 id="titel_w" style="font-family:IMPACT;font-size:40;font-weight: bold"> CONVERT MODEL<div style="font-family:IMPACT;font-size:14;font-weight: normal" >AUTHOR:GIAY NHAP<div> </h1> 
+<div style="position:absolute;left:10%;font-family:tahoma;font-size:12;font-weight: normal; text-align: left;">Input:*.ltb,*.wmdl,*.skn <br> Output: *.smd<br style="color:RED"> DA XOA WEB! </div>
+
+<div style="position:absolute; left:10%;top:150px;width:100%">
+ <input type="file" id ="files" class="file" style="left:0px;top:0px;width:150px;height:30px" />
+
+ <button class="fileinputs button1" style="width:150px;height:30px;left:5px;top:5px">
+  Load file
+ </button>
+
+
+
+<output id="list"></output>
+
+<button  class="button button1" id ="convet_but" type="button"  onclick="do_convert()" > Convert</button>
+<center>
+<canvas width=900  height = "500" id = "glcanvas" style ="position:absolute;left:3%;top:70px;right:10px">
+</center>
+<input  id="zoom" type="range" min="0" max="1000" value="40" step="0.1"> 
+
+</div>
+
+<div id="anim_list" style="overflow-x:hidden;" ><div id="anim_list_2" style="overflow-x:hidden;" ></div></div>
+
+<script>
+
+var ctrl_anim_list =document.getElementById("anim_list");
+
+function __set_gui_()
+{
+ctrl_anim_list.style.overflowX= "hidden";
+ctrl_anim_list.style.left=window.innerWidth-220;
+ctrl_anim_list.style.top=200;
+ctrl_anim_list.style.width =200;
+if (numAnim>0)
+{
+ctrl_anim_list.style.visibility = "visible";
+if (numAnim>14){
+ctrl_anim_list.style.overflowY="scroll";
+ctrl_anim_list.style.height= "420px";
+}else {
+ctrl_anim_list.style.overflowY= "hidden";
+ctrl_anim_list.style.height= numAnim*25+"px";
+}
+}
+else ctrl_anim_list.style.visibility = "hidden";
+}
+function do_convert()
+{
+if (isload==1)
+{
+__write_file();
+
+}
+else window.alert("Please Choose a fie");
+}
+function __write_file()
+{
+var textwrite = CREATE_DATA_SMD();
+ download(gFilename+".smd", textwrite);
+}
+var gFilename="";
+
+var isload=0;
+  function handleFileSelect(evt) {
+    var files = evt.target.files; 
+
+    for (var i = 0, f; f = files[i]; i++) {
+
+    
+      var reader = new FileReader();
+	
+      reader.onload = (function(theFile) {
+        return function(e) {
+	        gFilename=theFile.name;
+			var extfile = gFilename.substr(gFilename.length-4, 4).toLowerCase();
+ 
+		    s__load_fie(this.result,extfile);
+          
+		 
+		//  __write_file();
+        };
+      })(f);
+	  
+		reader.readAsBinaryString(f);
+
+    }
+  }
+
+  document.getElementById('files').addEventListener('change', handleFileSelect, false);
+  
+</script>
+
+
+<script>
+//	console.log("+) open file PV-BCAxe_Beast_BL.LTB");
+//	__read_header(load_binary_resource("https://crossorigin.me/http://testwebgn.net23.net/PV-BCAxe_Beast_BL.LTB") );
+//$.get(
+//  "http://cors.io/?u=http://testwebgn.net23.net/PV-BCAxe_Beast_BL.LTB",
+//	__read_header
+//	)
+</script>
+
+
+
+  <script>
+  /*alert("\n\n\n Web da ngung hoat dong vi 1 so ly do ca nhan :D! Cam on ban da su dung trang web nay !    \n\n     -= Gia^y' Nha'p =-\n\n\n")
+		location.href = "http://testwebgn.net23.net/index2.html"	*/
+  var gzoom = 0;
+/*  $(function () {
+	var i = 40;
+
+	$('#zoom input').each(function () {
+		var that = this;
+		(function (i) {
+			var span = $('span', $(that).parent());
+			$(that).change(function () {
+				gzoom = $(that).val();
+				span.html((+$(that).val()).toFixed(4));
+			}).change();
+		})(i++);
+	});
+});
+*/
+function s__load_fie(data,gname)
+{
+
+if (gname.localeCompare(".ltb")==0)
+__read_header_LTB(data);
+else if (gname.localeCompare(".skn")==0)
+__read_header_SKN(data);
+else if (gname.localeCompare("wmdl")==0)
+ __read_header_WMDL(data);
+else if (gname.localeCompare(".skl")==0)
+ __read_header_SKL(data);
+else
+console.log(gname);
+
+grounp_submesh();
+__build_mesh();
+__built_point();
+isload=1;
+}
+
+  var maxminp=[];
+  var world_mesh=[];
+  var world_normal=[];
+  var word_tri=[];
+		function grounp_submesh()
+		{
+		world_mesh=[];
+		world_normal=[];
+		word_tri=[];
+		var n_tri = 0;
+		numb_1=0;
+		numb_2=0;
+		maxminp[0]=0.0;
+		maxminp[1]=100.0;
+		maxminp[2]=0.0;
+		maxminp[3]=100.0;
+		maxminp[4]=0.0;
+		maxminp[5]=100.0;
+		  for (var i=0;i<nummesh;i++)
+		  {
+				for (var j=0;j<mesh_nvert[i];j++)
+				{
+				
+					world_mesh[numb_1*3]=mesh_ver_pos[i][j*3];
+					world_mesh[numb_1*3+1]=mesh_ver_pos[i][j*3+1];
+					world_mesh[numb_1*3+2]=mesh_ver_pos[i][j*3+2];
+					if (maxminp[0]<world_mesh[numb_1*3]) maxminp[0]=world_mesh[numb_1*3];
+					if (maxminp[1]>world_mesh[numb_1*3]) maxminp[1]=world_mesh[numb_1*3];
+					
+					if (maxminp[2]<world_mesh[numb_1*3+1]) maxminp[2]=world_mesh[numb_1*3+1];
+					if (maxminp[3]>world_mesh[numb_1*3+1]) maxminp[3]=world_mesh[numb_1*3+1];
+					
+					if (maxminp[4]<world_mesh[numb_1*3+2]) maxminp[4]=world_mesh[numb_1*3+2];
+					if (maxminp[5]>world_mesh[numb_1*3+2]) maxminp[5]=world_mesh[numb_1*3+2];
+					
+					var r= mesh_ver_normals[i][j*3]*255;
+					   g =mesh_ver_normals[i][j*3+1]*255;
+					   b =mesh_ver_normals[i][j*3+2]*255;
+					var  iTmp =Math.ceil((2*r +5*g +b )/8)+100;
+				
+					if (iTmp>255)iTmp=255;
+						
+					//world_normal[numb_1*3]=mesh_ver_normals[i][j*3];
+				//	world_normal[numb_1*3+1]=mesh_ver_normals[i][j*3+1];
+					//world_normal[numb_1*3+2]=mesh_ver_normals[i][j*3+2];
+					world_normal[numb_1*3]=iTmp/255.0;
+					world_normal[numb_1*3+1]=iTmp/255.0;
+					world_normal[numb_1*3+2]=iTmp/255.0;
+					numb_1+=1;
+				}
+				
+				for (var j=0;j<mesh_nidx[i];j++)
+				{
+				word_tri[numb_2]=mesh_tri[i][j]+n_tri;
+				numb_2+=1
+				//console.log(word_tri[j]);
+				}
+				n_tri=numb_1;
+			
+				
+			
+		  }
+		  
+		}
+         var canvas = document.getElementById('glcanvas');
+         gl = canvas.getContext('experimental-webgl');
+		 var vertex_buffer ,vertices,colors,indices,color_buffer,index_buffer
+		function __build_mesh()
+		{
+          vertices =world_mesh;
+
+          colors =world_normal;
+
+          indices = word_tri;
+         
+      
+         vertex_buffer = gl.createBuffer ();
+         gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+         
+          color_buffer = gl.createBuffer ();
+         gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
+         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+
+         index_buffer = gl.createBuffer ();
+         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
+         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+         }                                     
+        
+
+         var vertCode = 'attribute vec3 position;'+
+            'uniform mat4 Pmatrix;'+
+            'uniform mat4 Vmatrix;'+
+            'uniform mat4 Mmatrix;'+
+            'attribute vec3 color;'+
+            'varying vec3 vColor;'+
+            'void main(void) { '+
+               'gl_Position = Pmatrix*Vmatrix*Mmatrix*vec4(position, 1.);'+
+               'vColor = color;'+
+            '}';
+
+         var fragCode = 'precision mediump float;'+
+            'varying vec3 vColor;'+
+            'void main(void) {'+
+               'gl_FragColor = vec4(vColor, 1.);'+
+            '}';
+
+         var vertShader = gl.createShader(gl.VERTEX_SHADER);
+         gl.shaderSource(vertShader, vertCode);
+         gl.compileShader(vertShader);
+
+         var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+         gl.shaderSource(fragShader, fragCode);
+         gl.compileShader(fragShader);
+			
+         var shaderprogram = gl.createProgram();
+         gl.attachShader(shaderprogram, vertShader);
+         gl.attachShader(shaderprogram, fragShader);
+         gl.linkProgram(shaderprogram);
+         
+        
+		 var _Pmatrix = gl.getUniformLocation(shaderprogram, "Pmatrix");
+         var _Vmatrix = gl.getUniformLocation(shaderprogram, "Vmatrix");
+         var _Mmatrix = gl.getUniformLocation(shaderprogram, "Mmatrix");
+		
+		 
+		 function __built_point()
+		 {
+       
+
+         gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+         var _position = gl.getAttribLocation(shaderprogram, "position");
+         gl.vertexAttribPointer(_position, 3, gl.FLOAT, false,0,0);
+         gl.enableVertexAttribArray(_position);
+
+         gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
+         var _color = gl.getAttribLocation(shaderprogram, "color");
+         gl.vertexAttribPointer(_color, 3, gl.FLOAT, false,0,0) ;
+         gl.enableVertexAttribArray(_color);
+         gl.useProgram(shaderprogram);
+		}
+        
+         
+         function get_projection(angle, a, zMin, zMax) {
+            var ang = Math.tan((angle*.5)*Math.PI/180);//angle*.5
+            return [
+               0.5/ang, 0 , 0, 0,
+               0, 0.5*a/ang, 0, 0,
+               0, 0, -(zMax+zMin)/(zMax-zMin), -1,
+               0, 0, (-2*zMax*zMin)/(zMax-zMin), 0 
+			   ];
+         }
+         
+         var proj_matrix = get_projection(-40, canvas.width/canvas.height, 0.1, 2000.0);
+         var mo_matrix = [ 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 ];
+         var view_matrix = [ 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 ];
+		
+         view_matrix[14] = view_matrix[14]-gzoom;
+
+         /*================= Mouse events ======================*/
+
+         var AMORTIZATION = 0.95;
+         var drag = false;
+         var old_x, old_y;
+         var dX = 0, dY = 0;
+			
+         var mouseDown = function(e) {
+            drag = true;
+            old_x = e.pageX, old_y = e.pageY;
+            e.preventDefault();
+            return false;
+         };
+         
+         var mouseUp = function(e){
+            drag = false;
+         };
+         
+         var mouseMove = function(e) {
+            if (!drag) return false;
+            dX = (e.pageX-old_x)*2*Math.PI/canvas.width,
+            dY = (e.pageY-old_y)*2*Math.PI/canvas.height;
+            THETA+= dX;
+            PHI+=dY;
+            old_x = e.pageX, old_y = e.pageY;
+            e.preventDefault();
+         };
+         
+         canvas.addEventListener("mousedown", mouseDown, false);
+         canvas.addEventListener("mouseup", mouseUp, false);
+         canvas.addEventListener("mouseout", mouseUp, false);
+         canvas.addEventListener("mousemove", mouseMove, false);
+
+         /*=========================rotation================*/
+
+         function rotateX(m, angle) {
+            var c = Math.cos(angle);
+            var s = Math.sin(angle);
+            var mv1 = m[1], mv5 = m[5], mv9 = m[9];
+				
+            m[1] = m[1]*c-m[2]*s;
+            m[5] = m[5]*c-m[6]*s;
+            m[9] = m[9]*c-m[10]*s;
+
+            m[2] = m[2]*c+mv1*s;
+            m[6] = m[6]*c+mv5*s;
+            m[10] = m[10]*c+mv9*s;
+         }
+
+         function rotateY(m, angle) {
+            var c = Math.cos(angle);
+            var s = Math.sin(angle);
+            var mv0 = m[0], mv4 = m[4], mv8 = m[8];
+				
+            m[0] = c*m[0]+s*m[2];
+            m[4] = c*m[4]+s*m[6];
+            m[8] = c*m[8]+s*m[10];
+
+            m[2] = c*m[2]-s*mv0;
+            m[6] = c*m[6]-s*mv4;
+            m[10] = c*m[10]-s*mv8;
+         }
+
+         /*=================== Drawing =================== */
+		
+
+         var THETA = 3.14,
+         PHI = 3.14;
+         var time_old = 0;
+				
+         var animate = function(time) {
+            var dt = time-time_old;
+					
+            if (!drag) {
+               dX *= AMORTIZATION, dY*=AMORTIZATION;
+               THETA+=dX, PHI+=dY;
+            }
+				gzoom =document.getElementById('zoom').value;
+                 view_matrix[14] =-gzoom-(maxminp[4]-maxminp[5])-(maxminp[2]-maxminp[3]);
+				 view_matrix[13] =	(maxminp[2]+maxminp[3])/2.0;
+				// view_matrix[12] =(maxminp[1]-maxminp[2])/2;
+            //set model matrix to I4
+					
+            mo_matrix[0] = 1, mo_matrix[1] = 0, mo_matrix[2] = 0,
+            mo_matrix[3] = 0,
+					
+            mo_matrix[4] = 0, mo_matrix[5] = 1, mo_matrix[6] = 0,
+            mo_matrix[7] = 0,
+					
+            mo_matrix[8] = 0, mo_matrix[9] = 0, mo_matrix[10] = 1,
+            mo_matrix[11] = 0,
+					
+            mo_matrix[12] = 0, mo_matrix[13] = 0, mo_matrix[14] = 0,
+            mo_matrix[15] = 1;
+
+            rotateY(mo_matrix, THETA);
+            rotateX(mo_matrix, PHI);
+					
+            time_old = time; 
+            gl.enable(gl.DEPTH_TEST);
+					
+            // gl.depthFunc(gl.LEQUAL);
+	
+            gl.clearColor(0.5, 0.5, 0.5, 0.9);
+            gl.clearDepth(1.0);
+            gl.viewport(0.0, 0.0, canvas.width, canvas.height);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+			if (isload==1)
+			{
+            gl.uniformMatrix4fv(_Pmatrix, false, proj_matrix);
+            gl.uniformMatrix4fv(_Vmatrix, false, view_matrix);
+            gl.uniformMatrix4fv(_Mmatrix, false, mo_matrix);
+
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
+            gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
+			}		
+            window.requestAnimationFrame(animate);
+			__set_gui_();
+         }
+			
+         animate(0);
+			
+      </script>
+
+	
+	
+
+</body>
+</html>
